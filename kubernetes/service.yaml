@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ias
+spec:
+  selector:
+    app: ias
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9000
+---
+# Ingress for Traefik
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ias-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /ias/
+        pathType: Prefix
+        backend:
+          service:
+            name: ias
+            port: 
+              number: 80

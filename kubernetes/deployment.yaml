@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ias-controller
+  labels:
+    app: ias
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ias
+  template:
+    metadata:
+      labels:
+        app: ias
+    spec:
+      serviceAccountName: ias
+      containers:
+      - name: ias
+        image: python:3.8
+        command: ["/bin/sh", "-c", "python3 -m http.server 9000"]
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - mountPath: /app
+          name: app
+      volumes:
+      - name: app
+        emptyDir: {}
+             
