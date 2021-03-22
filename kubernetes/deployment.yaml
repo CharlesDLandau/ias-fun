@@ -24,6 +24,15 @@ spec:
         volumeMounts:
         - mountPath: /app
           name: app
+        env:
+        - name: KUBERNETES_OWN_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_OWN_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
       volumes:
       - name: app
         emptyDir: {}

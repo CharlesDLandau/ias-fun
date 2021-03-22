@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ias-{{ name }}
+  labels:
+    app: ias-{{ name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ias-{{ name }}
+  template:
+    metadata:
+      labels:
+        app: ias-{{ name }}
+    spec:
+      containers:
+      - name: ias-{{ name }}
+        image: python:3.8
+        command: ["/bin/sh", "-c", "python3 -m http.server 9000"]
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - mountPath: /app
+          name: ias-{{ name }}
+        env:
+        - name: KUBERNETES_OWN_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: KUBERNETES_OWN_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      volumes:
+      - name: ias-{{ name }}
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ias-{{ name }}
+spec:
+  selector:
+    app: ias-{{ name }}
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9000
+---
+# Ingress for Traefik
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ias-{{ name }}-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /ias-{{ name }}/
+        pathType: Prefix
+        backend:
+          serviceName: ias-{{ name }}
+          servicePort: 80
